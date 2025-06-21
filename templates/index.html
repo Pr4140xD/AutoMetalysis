@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMeta - Automated Metadata Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Document Metadata Generator</h1>
+        <div id="drop-zone">
+            <p>Drag & drop files here</p>
+            <p>or</p>
+            <input type="file" id="file-input" accept=".pdf,.docx,.txt,.jpg,.png">
+            <label for="file-input">Choose file</label>
+        </div>
+        <div id="results" class="hidden">
+            <h2>Generated Metadata</h2>
+            <pre id="metadata-output"></pre>
+        </div>
+        <div id="error" class="hidden"></div>
+    </div>
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const resultsDiv = document.getElementById('results');
+        const outputPre = document.getElementById('metadata-output');
+        const errorDiv = document.getElementById('error');
+
+        // Drag and drop handling
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('highlight');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Reset UI
+            resultsDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            
+            // Show processing state
+            dropZone.innerHTML = `<p>Processing ${file.name}...</p>`;
+            
+            // Send to server
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                
+                // Display results
+                outputPre.textContent = JSON.stringify(data, null, 2);
+                resultsDiv.classList.remove('hidden');
+                dropZone.innerHTML = `<p>Drag & drop files here</p><p>or</p>
+                    <input type="file" id="file-input" accept=".pdf,.docx,.txt,.jpg,.png">
+                    <label for="file-input">Choose file</label>`;
+                fileInput = document.getElementById('file-input');
+                fileInput.addEventListener('change', function() {
+                    handleFiles(this.files);
+                });
+            })
+            .catch(error => {
+                errorDiv.textContent = `Error: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+                dropZone.innerHTML = `<p>Drag & drop files here</p><p>or</p>
+                    <input type="file" id="file-input" accept=".pdf,.docx,.txt,.jpg,.png">
+                    <label for="file-input">Choose file</label>`;
+                fileInput = document.getElementById('file-input');
+                fileInput.addEventListener('change', function() {
+                    handleFiles(this.files);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
