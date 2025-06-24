@@ -47,4 +47,32 @@ Handles both single and multi-page documents reliably.
             ![Screenshot 2025-06-21 220730](https://github.com/user-attachments/assets/331d8726-785f-42fc-8e02-50430dc4db20)
             ![Screenshot 2025-06-21 220744](https://github.com/user-attachments/assets/764dfcbd-b540-4c2f-9401-4e0636931f90)
 
+How to Load and Run This Project on Your PC
+1. Clone the Repository
+Open your terminal or command prompt and run on bash:(replace the file name to what you have)
+git clone https://github.com/Pr4140xD/AutoMetalysis
+cd MarsML
+
+2.Set Up Python Virtual Environment
+Create and activate a virtual environment to manage dependencies:
+
+bash
+python -m venv venv
+source venv/bin/activate      # On Linux/Mac
+venv\Scripts\activate         # On Windows
+
+
+3.Install Required Dependencies
+Install all necessary Python packages:
+
+bash
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+4. Run the Flask Application
+Start the web server:
+
+bash
+python app.py
+(now it would run at your local host)
 
